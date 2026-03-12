@@ -1,0 +1,135 @@
+body {
+  background: #e8fff7;
+  font-family: system-ui;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.main {
+  max-width: 1200px;
+  flex-grow: 1; /* allows main content + quick access panel to push footer down */
+}
+
+/* Footer stays at bottom */
+.footer {
+  flex-shrink: 0;
+}
+
+/* Optional: Quick Access max-width & spacing */
+.quick-access-card {
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  background: #f0fff8;
+  width: 100%;
+  max-width: 900px;
+}
+
+.converter-card {
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.unit-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.unit-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #d6fff3;
+  font-weight: 600;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.unit-btn.active {
+  background: #1abc9c;
+  color: white;
+}
+
+.unit-btn:hover {
+  transform: scale(1.08);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.result-card {
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+  animation: fadeUp 0.25s ease;
+  text-align: center;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quick-access-card {
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  background: #f0fff8;
+}
+
+#allUnits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 250px; /* scrollable if too many units */
+  overflow-y: auto;
+  padding: 4px;
+  justify-content: center;
+}
+
+#allUnits .unit-btn {
+  background: #c0f3e0;
+  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 10px;
+  margin: 2px;
+  transition: 0.2s;
+}
+
+#allUnits .unit-btn:hover {
+  transform: scale(1.05);
+}
+
+.category-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #d6fff3;
+  font-weight: 600;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.category-btn.active {
+  background: #1abc9c;
+  color: white;
+}
+
+.category-btn:hover {
+  transform: scale(1.05);
+}

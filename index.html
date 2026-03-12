@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Universal Unit Converter – convert Length, Mass, Volume, Time, Speed, Temperature, Pressure, Energy, Power, Digital Storage, Angle and more. Supports multiple languages.">
+        <meta name="author" content="Iwannabefree">
+        <meta name="keywords" content="
+      unit converter, conversion calculator, length conversion, mass conversion, temperature conversion, volume conversion, speed conversion, time conversion, energy conversion, digital storage conversion,
+      convertir unités, convertisseur d'unités, conversión de unidades, Umrechner, conversão de unidades">
+        <meta name="robots" content="index, follow">
+      
+        <title>Universal Unit Converter – Convert Length, Mass, Volume, Time, Temperature, and More</title>
+      
+        <!-- Bootstrap CSS (Bootswatch Minty Theme) -->
+        <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/minty/bootstrap.min.css" rel="stylesheet">
+      
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="style.css">
+      
+        <!-- Structured Data for SEO -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Universal Unit Converter",
+          "url": "https://yourdomain.com",
+          "description": "Convert Length, Mass, Volume, Time, Speed, Temperature, Pressure, Energy, Power, Digital Storage, Angle, and more.",
+          "applicationCategory": "Utility",
+          "keywords": "unit converter, conversion calculator, length, mass, volume, temperature, time, speed, energy, digital storage"
+        }
+        </script>
+      </head>
+      
+<body>
+
+<div class="d-flex flex-column min-vh-100">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+      <span class="navbar-brand fw-bold">Universal Converter</span>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="container main mt-4 flex-grow-1">
+
+    <!-- Categories -->
+    <div id="categories" class="d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
+
+    <!-- Converter Panels -->
+    <div class="row g-4 mb-4">
+      <!-- LEFT PANEL -->
+      <div class="col-md-4">
+        <div class="card converter-card">
+          <h5 class="card-title text-center">From</h5>
+          <input id="inputValue" type="number" class="form-control mb-3" value="1">
+          <div id="fromUnits" class="unit-grid"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="col-md-8">
+        <div class="card converter-card">
+          <h5 class="card-title text-center">Converted Results</h5>
+          <div id="results" class="results-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Access Panel (centered below conversion box) -->
+    <div class="d-flex justify-content-center mb-4">
+      <div class="card quick-access-card p-3" style="max-width:900px; width:100%;">
+        <h5 class="card-title text-center">Quick Access Units</h5>
+
+        <!-- Small Search Bar -->
+        <div class="d-flex justify-content-center mb-3">
+          <input id="allUnitsSearch" type="text" class="form-control form-control-sm"
+                 style="max-width:300px; width:100%;" placeholder="Search units...">
+        </div>
+
+        <div id="allUnits" class="unit-grid"></div>
+      </div>
+    </div>
+
+  </div> <!-- /container main -->
+
+  <!-- Footer -->
+  <footer class="footer mt-auto py-3 bg-primary text-white text-center">
+    <div class="container">
+      <span>&copy; 2026 Universal Converter. All rights reserved. | 
+        <a href="privacy.html" class="text-white text-decoration-underline">Privacy Policy</a>
+      </span>
+    </div>
+  </footer>
+
+</div> <!-- /flex column -->
+
+<script src="script.js"></script>
+</body>
+</html>
