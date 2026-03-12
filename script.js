@@ -25,6 +25,15 @@ const resultsDiv = document.getElementById("results");
 const allUnitsDiv = document.getElementById("allUnits");
 const allUnitsSearch = document.getElementById("allUnitsSearch");
 
+
+// ---------------------
+// LIVE INPUT CONVERSION (NEW)
+// ---------------------
+inputValue.addEventListener("input", () => {
+    convert();
+});
+
+
 // ---------------------
 // Build Categories
 // ---------------------
@@ -35,22 +44,31 @@ function buildCategories() {
         btn.type = "button";
         btn.className = "category-btn";
         btn.innerText = cat;
+
         btn.onclick = () => {
             activeCategory = cat;
             fromUnit = Object.keys(categories[cat].units)[0];
+
             buildFromUnits();
             convert();
             highlightCategory();
         };
+
         categoriesDiv.appendChild(btn);
     }
+
     highlightCategory();
 }
 
+
+// ---------------------
 // Highlight active category
+// ---------------------
 function highlightCategory() {
     const buttons = categoriesDiv.querySelectorAll(".category-btn");
+
     buttons.forEach(b => b.classList.remove("active"));
+
     buttons.forEach(b => {
         if (b.innerText === activeCategory) {
             b.classList.add("active");
@@ -58,139 +76,200 @@ function highlightCategory() {
     });
 }
 
+
 // ---------------------
-// Build From Units (with proper highlighting)
+// Build From Units
 // ---------------------
 function buildFromUnits() {
+
     fromUnitsDiv.innerHTML = "";
     const units = categories[activeCategory].units;
 
-    // Sort units smallest -> largest (except Temperature)
     const sortedUnits = categories[activeCategory].special
         ? Object.keys(units)
-        : Object.keys(units).sort((a, b) => units[a] - units[b]);
+        : Object.keys(units).sort((a,b)=>units[a]-units[b]);
 
     sortedUnits.forEach(u => {
+
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "unit-btn";
         btn.innerText = u;
 
         btn.onclick = () => {
-            fromUnit = u;            // set selected unit
-            highlightFromUnit();     // highlight the correct button
-            convert();               // convert and display results
+
+            fromUnit = u;
+
+            highlightFromUnit();
+
+            convert();
         };
 
         fromUnitsDiv.appendChild(btn);
+
     });
 
-    highlightFromUnit(); // highlight the correct From unit after rebuild
+    highlightFromUnit();
 }
 
+
 // ---------------------
-// Highlight From Unit (strictly within FROM panel)
+// Highlight From Unit
 // ---------------------
 function highlightFromUnit() {
-    const buttons = fromUnitsDiv.querySelectorAll(".unit-btn");
-    buttons.forEach(b => b.classList.remove("active"));
 
-    // Find the button corresponding to current fromUnit
-    buttons.forEach(b => {
-        if (b.innerText === fromUnit) {
+    const buttons = fromUnitsDiv.querySelectorAll(".unit-btn");
+
+    buttons.forEach(b=>b.classList.remove("active"));
+
+    buttons.forEach(b=>{
+        if(b.innerText===fromUnit){
             b.classList.add("active");
         }
     });
-}
 
+}
 
 
 // ---------------------
 // Convert Function
 // ---------------------
-function convert() {
-    const val = parseFloat(inputValue.value);
-    if (isNaN(val)) return;
-    const cat = categories[activeCategory];
-    resultsDiv.innerHTML = "";
+function convert(){
 
-    // Get unit keys sorted by value (small → large), keep Temperature order
-    const unitKeys = Object.keys(cat.units);
-    const sortedKeys = cat.special ? unitKeys : unitKeys.sort((a, b) => cat.units[a] - cat.units[b]);
+    const val=parseFloat(inputValue.value);
 
-    sortedKeys.forEach(u => {
+    if(isNaN(val)){
+        resultsDiv.innerHTML="";
+        return;
+    }
+
+    const cat=categories[activeCategory];
+
+    resultsDiv.innerHTML="";
+
+    const unitKeys=Object.keys(cat.units);
+
+    const sortedKeys=cat.special
+        ? unitKeys
+        : unitKeys.sort((a,b)=>cat.units[a]-cat.units[b]);
+
+    sortedKeys.forEach(u=>{
+
         let result;
 
-        // Temperature special conversions
-        if (cat.special && activeCategory === "Temperature") {
-            if (fromUnit === "C") {
-                if (u === "C") result = val;
-                else if (u === "F") result = val * 9 / 5 + 32;
-                else if (u === "K") result = val + 273.15;
-            } else if (fromUnit === "F") {
-                if (u === "C") result = (val - 32) * 5 / 9;
-                else if (u === "F") result = val;
-                else if (u === "K") result = (val - 32) * 5 / 9 + 273.15;
-            } else if (fromUnit === "K") {
-                if (u === "C") result = val - 273.15;
-                else if (u === "F") result = (val - 273.15) * 9 / 5 + 32;
-                else if (u === "K") result = val;
+        if(cat.special && activeCategory==="Temperature"){
+
+            if(fromUnit==="C"){
+                if(u==="C") result=val;
+                else if(u==="F") result=val*9/5+32;
+                else if(u==="K") result=val+273.15;
             }
-        } else {
-            // Linear conversions
-            const base = val * cat.units[fromUnit];
-            result = base / cat.units[u];
+
+            else if(fromUnit==="F"){
+                if(u==="C") result=(val-32)*5/9;
+                else if(u==="F") result=val;
+                else if(u==="K") result=(val-32)*5/9+273.15;
+            }
+
+            else if(fromUnit==="K"){
+                if(u==="C") result=val-273.15;
+                else if(u==="F") result=(val-273.15)*9/5+32;
+                else if(u==="K") result=val;
+            }
+
         }
 
-        const card = document.createElement("div");
-        card.className = "result-card";
+        else{
 
-        // Format numbers: no scientific notation, trim unnecessary zeros
+            const base=val*cat.units[fromUnit];
+
+            result=base/cat.units[u];
+
+        }
+
+        const card=document.createElement("div");
+
+        card.className="result-card";
+
         let displayValue;
-        if (Math.abs(result) < 0.01 && result !== 0) {
-            // very small numbers show up to 6 decimals
-            displayValue = result.toFixed(6);
-        } else {
-            displayValue = result.toFixed(2);  // standard format: 2 decimals
-        }
-        displayValue = displayValue.replace(/\.?0+$/, ""); // remove trailing zeros
 
-        card.innerText = `${displayValue} ${u}`;
+        if(Math.abs(result)<0.01 && result!==0){
+            displayValue=result.toFixed(6);
+        }
+        else{
+            displayValue=result.toFixed(2);
+        }
+
+        displayValue=displayValue.replace(/\.?0+$/,"");
+
+        card.innerText=`${displayValue} ${u}`;
+
         resultsDiv.appendChild(card);
+
     });
+
 }
 
 
 // ---------------------
 // Quick Access Panel
 // ---------------------
-function buildAllUnits() {
-    allUnitsDiv.innerHTML = "";
-    for (let cat in categories) {
-        for (let u in categories[cat].units) {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "unit-btn";
-            btn.innerText = u;
-            btn.onclick = () => {
-                activeCategory = cat;
-                fromUnit = u;
+function buildAllUnits(){
+
+    allUnitsDiv.innerHTML="";
+
+    for(let cat in categories){
+
+        for(let u in categories[cat].units){
+
+            const btn=document.createElement("button");
+
+            btn.type="button";
+
+            btn.className="unit-btn";
+
+            btn.innerText=u;
+
+            btn.onclick=()=>{
+
+                activeCategory=cat;
+
+                fromUnit=u;
+
                 buildFromUnits();
+
                 highlightCategory();
+
                 convert();
+
             };
+
             allUnitsDiv.appendChild(btn);
+
         }
+
     }
+
 }
 
-// Search in Quick Access panel
-allUnitsSearch.addEventListener("input", () => {
-    const term = allUnitsSearch.value.toLowerCase();
-    allUnitsDiv.querySelectorAll(".unit-btn").forEach(b => {
-        b.style.display = b.innerText.toLowerCase().includes(term) ? "inline-flex" : "none";
+
+// ---------------------
+// Quick Access Search
+// ---------------------
+allUnitsSearch.addEventListener("input",()=>{
+
+    const term=allUnitsSearch.value.toLowerCase();
+
+    allUnitsDiv.querySelectorAll(".unit-btn").forEach(b=>{
+
+        b.style.display=b.innerText.toLowerCase().includes(term)
+            ?"inline-flex"
+            :"none";
+
     });
+
 });
+
 
 // ---------------------
 // Initial Setup
