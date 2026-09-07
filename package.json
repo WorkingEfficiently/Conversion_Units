@@ -1,0 +1,11 @@
+{
+  "name": "unitconverter-life",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Universal Converter — a static, no-build unit conversion site (unitconverter.life).",
+  "scripts": {
+    "build": "node scripts/build-locales.js",
+    "test": "node tests/convert-core.test.js",
+    "pretest": "node --check convert-core.js && node --check translations.js && node --check script.js"
+  }
+}

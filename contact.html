@@ -1,17 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9089745408689623" crossorigin="anonymous"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Contact Us - Universal Converter</title>
+<title>Contact Universal Converter</title>
+<meta name="description" content="Report a bug, suggest a new unit or category, or ask a question about Universal Converter.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://unitconverter.life/contact.html">
 <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/minty/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-dark bg-primary mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="index.html">Universal Converter</a>
+    <a class="navbar-brand fw-bold" href="/">Universal Converter</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about.html">About Us</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" href="/contact.html">Contact Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="/privacy.html">Privacy Policy</a></li>
+        <li class="nav-item"><a class="nav-link" href="/terms.html">Terms of Service</a></li>
+      </ul>
+    </div>
   </div>
 </nav>
 
@@ -19,25 +36,26 @@
 
   <div class="text-center mb-4">
     <h1 class="fw-bold h2">Contact Us</h1>
-    <p class="text-muted">Have a question, feedback, or a feature suggestion? Get in touch with us!</p>
+    <p class="text-muted">Found a wrong number, a missing unit, or a broken page? This is the fastest way to reach us.</p>
   </div>
 
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="card shadow-sm mb-4">
         <div class="card-body">
-          <h2 class="card-title h4 mb-3">Get in Touch</h2>
+          <h2 class="card-title h4 mb-3">Get in touch</h2>
           <p class="card-text">
-            We are constantly striving to improve <strong>Universal Converter</strong>. If you notice a bug, have a feature request for new unit categories, or simply want to share your thoughts, please send us an email.
+            Bug reports get priority — if a conversion is wrong, we want to know about it. Feature requests
+            (a new unit, a new category, a language we're missing) are also welcome.
           </p>
-          
+
           <div class="p-3 bg-light rounded border my-3">
-            <strong>Email Support:</strong> 
-            <a href="mailto:contact@universalconverter.life" class="text-primary fw-bold">contact@universalconverter.life</a>
+            <strong>Email:</strong>
+            <a href="mailto:hello@unitconverter.life" class="text-primary fw-bold">hello@unitconverter.life</a>
           </div>
 
-          <p class="card-text text-muted">
-            We aim to respond to all inquiries within 24 to 48 hours.
+          <p class="card-text text-muted mb-0">
+            We read every message. Response times vary, but we aim for a couple of days.
           </p>
         </div>
       </div>
@@ -49,14 +67,15 @@
 <footer class="footer mt-auto py-3 bg-primary text-white text-center">
   <div class="container">
     <div class="mb-2">
-      <a href="about.html" class="text-white mx-2 text-decoration-underline">About Us</a> |
-      <a href="contact.html" class="text-white mx-2 text-decoration-underline">Contact Us</a> |
-      <a href="privacy.html" class="text-white mx-2 text-decoration-underline">Privacy Policy</a> |
-      <a href="terms.html" class="text-white mx-2 text-decoration-underline">Terms of Service</a>
+      <a href="/about.html" class="text-white mx-2 text-decoration-underline">About Us</a> |
+      <a href="/contact.html" class="text-white mx-2 text-decoration-underline">Contact Us</a> |
+      <a href="/privacy.html" class="text-white mx-2 text-decoration-underline">Privacy Policy</a> |
+      <a href="/terms.html" class="text-white mx-2 text-decoration-underline">Terms of Service</a>
     </div>
-    <small>&copy; 2026 Universal Converter. All rights reserved.</small>
+    <small>&copy; <span id="year"></span> Universal Converter. All rights reserved.</small>
   </div>
 </footer>
 
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>

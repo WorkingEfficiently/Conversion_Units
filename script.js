@@ -1,280 +1,232 @@
-// ---------------------
-// Units Database
-// ---------------------
-const categories = {
-    Length:{base:"m",units:{km:1000,m:1,cm:0.01,mm:0.001,mi:1609.34,yd:0.9144,ft:0.3048,in:0.0254,nmi:1852}},
-    Mass:{base:"kg",units:{t:1000,kg:1,g:0.001,mg:1e-6,lb:0.453592,oz:0.0283495,st:6.35029}},
-    Volume:{base:"L",units:{m3:1000,L:1,mL:0.001,gal:3.78541,qt:0.946353,pt:0.473176,cup:0.24}},
-    Time:{base:"s",units:{s:1,min:60,h:3600,d:86400,wk:604800,yr:31557600}},
-    Speed:{base:"m/s",units:{"m/s":1,"km/h":0.277778,mph:0.44704,kt:0.514444,"ft/s":0.3048}},
-    Temperature:{base:"C",special:true, units:{C:1,F:1,K:1}},
-    Pressure:{base:"Pa",units:{Pa:1,kPa:1000,MPa:1000000,bar:100000,atm:101325,psi:6894.76,Torr:133.322}},
-    Energy:{base:"J",units:{J:1,kJ:1000,cal:4.184,kcal:4184,Wh:3600,kWh:3600000,BTU:1055}},
-    Power:{base:"W",units:{W:1,kW:1000,MW:1e6,HP:745.7}},
-    DigitalStorage:{base:"B",units:{B:1,KB:1000,MB:1e6,GB:1e9,TB:1e12}},
-    Angle:{base:"deg",units:{deg:1,rad:57.2958,grad:0.9}}
-};
+/*
+ * UI glue for the converter. The actual math lives in convert-core.js and
+ * the per-language text lives in translations.js — both are loaded before
+ * this file in every page, so ConvertCore/I18N are already on window by
+ * the time this runs.
+ */
+(function () {
+  "use strict";
 
-let activeCategory = "Length";
-let fromUnit = Object.keys(categories[activeCategory].units)[0];
+  var locale = (document.documentElement.lang || "en").toLowerCase();
+  var t = (window.I18N && window.I18N[locale]) || window.I18N.en;
 
-const categoriesDiv = document.getElementById("categories");
-const fromUnitsDiv = document.getElementById("fromUnits");
-const inputValue = document.getElementById("inputValue");
-const resultsDiv = document.getElementById("results");
-const allUnitsDiv = document.getElementById("allUnits");
-const allUnitsSearch = document.getElementById("allUnitsSearch");
+  var STORAGE_KEY = "unitconverter:lastChoice";
 
+  var els = {
+    categories: document.getElementById("categories"),
+    fromUnits: document.getElementById("fromUnits"),
+    input: document.getElementById("inputValue"),
+    results: document.getElementById("results"),
+    allUnits: document.getElementById("allUnits"),
+    allUnitsSearch: document.getElementById("allUnitsSearch"),
+    year: document.getElementById("year")
+  };
 
-// ---------------------
-// LIVE INPUT CONVERSION (NEW)
-// ---------------------
-inputValue.addEventListener("input", () => {
-    convert();
-});
+  var state = restoreState();
 
+  function restoreState() {
+    var fallback = { category: ConvertCore.CATEGORY_ORDER[0], unit: null };
+    try {
+      var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (saved && ConvertCore.CATEGORIES[saved.category]) {
+        return saved;
+      }
+    } catch (err) {
+      // localStorage can be unavailable (private browsing, etc.) — not worth failing over
+    }
+    return fallback;
+  }
 
-// ---------------------
-// Build Categories
-// ---------------------
-function buildCategories() {
-    categoriesDiv.innerHTML = "";
-    for (let cat in categories) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "category-btn";
-        btn.innerText = cat;
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (err) {
+      // ignore — this is a nice-to-have, not a requirement
+    }
+  }
 
-        btn.onclick = () => {
-            activeCategory = cat;
-            fromUnit = Object.keys(categories[cat].units)[0];
+  function categoryLabel(key) {
+    return (t.categories && t.categories[key]) || key;
+  }
 
-            buildFromUnits();
-            convert();
-            highlightCategory();
-        };
+  function buildCategoryButtons() {
+    els.categories.innerHTML = "";
 
-        categoriesDiv.appendChild(btn);
+    ConvertCore.CATEGORY_ORDER.forEach(function (key) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "category-btn";
+      btn.textContent = categoryLabel(key);
+      btn.dataset.category = key;
+      btn.setAttribute("aria-pressed", String(key === state.category));
+
+      btn.addEventListener("click", function () {
+        state.category = key;
+        state.unit = ConvertCore.sortedUnitKeys(key)[0];
+        buildFromUnitButtons();
+        highlightCategoryButtons();
+        renderResults();
+        saveState();
+      });
+
+      els.categories.appendChild(btn);
+    });
+
+    highlightCategoryButtons();
+  }
+
+  function highlightCategoryButtons() {
+    els.categories.querySelectorAll(".category-btn").forEach(function (btn) {
+      var active = btn.dataset.category === state.category;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  function buildFromUnitButtons() {
+    els.fromUnits.innerHTML = "";
+
+    var unitKeys = ConvertCore.sortedUnitKeys(state.category);
+    if (!unitKeys.includes(state.unit)) {
+      state.unit = unitKeys[0];
     }
 
-    highlightCategory();
-}
+    var unitMeta = ConvertCore.CATEGORIES[state.category].units;
 
+    unitKeys.forEach(function (unit) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "unit-btn";
+      btn.textContent = unit;
+      btn.title = unitMeta[unit].name;
+      btn.dataset.unit = unit;
 
-// ---------------------
-// Highlight active category
-// ---------------------
-function highlightCategory() {
-    const buttons = categoriesDiv.querySelectorAll(".category-btn");
+      btn.addEventListener("click", function () {
+        state.unit = unit;
+        highlightFromUnitButtons();
+        renderResults();
+        saveState();
+      });
 
-    buttons.forEach(b => b.classList.remove("active"));
-
-    buttons.forEach(b => {
-        if (b.innerText === activeCategory) {
-            b.classList.add("active");
-        }
+      els.fromUnits.appendChild(btn);
     });
-}
 
+    highlightFromUnitButtons();
+  }
 
-// ---------------------
-// Build From Units
-// ---------------------
-function buildFromUnits() {
+  function highlightFromUnitButtons() {
+    els.fromUnits.querySelectorAll(".unit-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset.unit === state.unit);
+    });
+  }
 
-    fromUnitsDiv.innerHTML = "";
-    const units = categories[activeCategory].units;
+  function renderResults() {
+    var value = parseFloat(els.input.value);
+    els.results.innerHTML = "";
 
-    const sortedUnits = categories[activeCategory].special
-        ? Object.keys(units)
-        : Object.keys(units).sort((a,b)=>units[a]-units[b]);
+    if (isNaN(value)) return;
 
-    sortedUnits.forEach(u => {
+    var results = ConvertCore.convert(state.category, state.unit, value);
+    var unitMeta = ConvertCore.CATEGORIES[state.category].units;
 
-        const btn = document.createElement("button");
+    ConvertCore.sortedUnitKeys(state.category).forEach(function (unit) {
+      var card = document.createElement("button");
+      card.type = "button";
+      card.className = "result-card";
+      card.title = unitMeta[unit].name;
+
+      var display = ConvertCore.formatResult(results[unit]) + " " + unit;
+      card.textContent = display;
+
+      card.addEventListener("click", function () {
+        copyToClipboard(display, card);
+      });
+
+      els.results.appendChild(card);
+    });
+  }
+
+  function copyToClipboard(text, anchorEl) {
+    if (!navigator.clipboard) return;
+
+    navigator.clipboard.writeText(text).then(function () {
+      showToast(anchorEl);
+    }, function () {
+      // clipboard permission denied or unsupported context — fail quietly
+    });
+  }
+
+  function showToast(anchorEl) {
+    var toast = document.createElement("span");
+    toast.className = "copy-toast";
+    toast.textContent = t.ui.copied;
+    anchorEl.appendChild(toast);
+    window.setTimeout(function () {
+      toast.remove();
+    }, 900);
+  }
+
+  function buildQuickAccessUnits() {
+    els.allUnits.innerHTML = "";
+
+    ConvertCore.CATEGORY_ORDER.forEach(function (category) {
+      var unitMeta = ConvertCore.CATEGORIES[category].units;
+
+      ConvertCore.sortedUnitKeys(category).forEach(function (unit) {
+        var btn = document.createElement("button");
         btn.type = "button";
         btn.className = "unit-btn";
-        btn.innerText = u;
+        btn.textContent = unit;
+        btn.title = categoryLabel(category) + " — " + unitMeta[unit].name;
 
-        btn.onclick = () => {
+        btn.addEventListener("click", function () {
+          state.category = category;
+          state.unit = unit;
+          buildFromUnitButtons();
+          highlightCategoryButtons();
+          renderResults();
+          saveState();
+          els.input.focus();
+        });
 
-            fromUnit = u;
-
-            highlightFromUnit();
-
-            convert();
-        };
-
-        fromUnitsDiv.appendChild(btn);
-
+        els.allUnits.appendChild(btn);
+      });
     });
+  }
 
-    highlightFromUnit();
-}
-
-
-// ---------------------
-// Highlight From Unit
-// ---------------------
-function highlightFromUnit() {
-
-    const buttons = fromUnitsDiv.querySelectorAll(".unit-btn");
-
-    buttons.forEach(b=>b.classList.remove("active"));
-
-    buttons.forEach(b=>{
-        if(b.innerText===fromUnit){
-            b.classList.add("active");
-        }
+  function wireQuickAccessSearch() {
+    els.allUnitsSearch.addEventListener("input", function () {
+      var term = els.allUnitsSearch.value.trim().toLowerCase();
+      els.allUnits.querySelectorAll(".unit-btn").forEach(function (btn) {
+        var matches = !term ||
+          btn.textContent.toLowerCase().includes(term) ||
+          btn.title.toLowerCase().includes(term);
+        btn.hidden = !matches;
+      });
     });
+  }
 
-}
-
-
-// ---------------------
-// Convert Function
-// ---------------------
-function convert(){
-
-    const val=parseFloat(inputValue.value);
-
-    if(isNaN(val)){
-        resultsDiv.innerHTML="";
-        return;
+  function init() {
+    if (!state.unit) {
+      state.unit = ConvertCore.sortedUnitKeys(state.category)[0];
     }
 
-    const cat=categories[activeCategory];
+    buildCategoryButtons();
+    buildFromUnitButtons();
+    buildQuickAccessUnits();
+    wireQuickAccessSearch();
+    renderResults();
 
-    resultsDiv.innerHTML="";
+    els.input.addEventListener("input", renderResults);
 
-    const unitKeys=Object.keys(cat.units);
-
-    const sortedKeys=cat.special
-        ? unitKeys
-        : unitKeys.sort((a,b)=>cat.units[a]-cat.units[b]);
-
-    sortedKeys.forEach(u=>{
-
-        let result;
-
-        if(cat.special && activeCategory==="Temperature"){
-
-            if(fromUnit==="C"){
-                if(u==="C") result=val;
-                else if(u==="F") result=val*9/5+32;
-                else if(u==="K") result=val+273.15;
-            }
-
-            else if(fromUnit==="F"){
-                if(u==="C") result=(val-32)*5/9;
-                else if(u==="F") result=val;
-                else if(u==="K") result=(val-32)*5/9+273.15;
-            }
-
-            else if(fromUnit==="K"){
-                if(u==="C") result=val-273.15;
-                else if(u==="F") result=(val-273.15)*9/5+32;
-                else if(u==="K") result=val;
-            }
-
-        }
-
-        else{
-
-            const base=val*cat.units[fromUnit];
-
-            result=base/cat.units[u];
-
-        }
-
-        const card=document.createElement("div");
-
-        card.className="result-card";
-
-        let displayValue;
-
-        if(Math.abs(result)<0.01 && result!==0){
-            displayValue=result.toFixed(6);
-        }
-        else{
-            displayValue=result.toFixed(2);
-        }
-
-        displayValue=displayValue.replace(/\.?0+$/,"");
-
-        card.innerText=`${displayValue} ${u}`;
-
-        resultsDiv.appendChild(card);
-
-    });
-
-}
-
-
-// ---------------------
-// Quick Access Panel
-// ---------------------
-function buildAllUnits(){
-
-    allUnitsDiv.innerHTML="";
-
-    for(let cat in categories){
-
-        for(let u in categories[cat].units){
-
-            const btn=document.createElement("button");
-
-            btn.type="button";
-
-            btn.className="unit-btn";
-
-            btn.innerText=u;
-
-            btn.onclick=()=>{
-
-                activeCategory=cat;
-
-                fromUnit=u;
-
-                buildFromUnits();
-
-                highlightCategory();
-
-                convert();
-
-            };
-
-            allUnitsDiv.appendChild(btn);
-
-        }
-
+    if (els.year) {
+      els.year.textContent = String(new Date().getFullYear());
     }
+  }
 
-}
-
-
-// ---------------------
-// Quick Access Search
-// ---------------------
-allUnitsSearch.addEventListener("input",()=>{
-
-    const term=allUnitsSearch.value.toLowerCase();
-
-    allUnitsDiv.querySelectorAll(".unit-btn").forEach(b=>{
-
-        b.style.display=b.innerText.toLowerCase().includes(term)
-            ?"inline-flex"
-            :"none";
-
-    });
-
-});
-
-
-// ---------------------
-// Initial Setup
-// ---------------------
-buildCategories();
-buildFromUnits();
-buildAllUnits();
-convert();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
