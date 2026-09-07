@@ -28,6 +28,24 @@ function canonicalUrl(localeCode) {
   return SITE + locale.path;
 }
 
+// How far the generated file sits below the project root — "" for the
+// English homepage (index.html), "../" for everything under /es/, /fr/,
+// etc. Used to build relative links/asset paths so the site works when
+// opened straight from disk (file://) and not just when served from a
+// domain root.
+function relativePrefix(localeCode) {
+  const locale = LOCALES.find((l) => l.code === localeCode);
+  return locale.path === "/" ? "" : "../";
+}
+
+// A relative href to another locale's homepage file, from the page
+// currently being rendered.
+function relativeLocaleHref(fromCode, toCode) {
+  const toLocale = LOCALES.find((l) => l.code === toCode);
+  const toFile = toLocale.path === "/" ? "index.html" : `${toLocale.path.slice(1)}index.html`;
+  return relativePrefix(fromCode) + toFile;
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -71,26 +89,26 @@ function webAppJsonLd(localeCode, t) {
 }
 
 function navLinks(t, localeCode) {
-  const isHome = localeCode === "en";
+  const rel = relativePrefix(localeCode);
   return `
-      <a class="navbar-brand fw-bold" href="/">Universal Converter</a>
+      <a class="navbar-brand fw-bold" href="${rel}index.html">Universal Converter</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarMain">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">${escapeHtml(t.nav.home)}</a></li>
-          <li class="nav-item"><a class="nav-link" href="/about.html">${escapeHtml(t.nav.about)}</a></li>
-          <li class="nav-item"><a class="nav-link" href="/contact.html">${escapeHtml(t.nav.contact)}</a></li>
-          <li class="nav-item"><a class="nav-link" href="/privacy.html">${escapeHtml(t.nav.privacy)}</a></li>
-          <li class="nav-item"><a class="nav-link" href="/terms.html">${escapeHtml(t.nav.terms)}</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="${rel}index.html">${escapeHtml(t.nav.home)}</a></li>
+          <li class="nav-item"><a class="nav-link" href="${rel}about.html">${escapeHtml(t.nav.about)}</a></li>
+          <li class="nav-item"><a class="nav-link" href="${rel}contact.html">${escapeHtml(t.nav.contact)}</a></li>
+          <li class="nav-item"><a class="nav-link" href="${rel}privacy.html">${escapeHtml(t.nav.privacy)}</a></li>
+          <li class="nav-item"><a class="nav-link" href="${rel}terms.html">${escapeHtml(t.nav.terms)}</a></li>
         </ul>
         <details class="lang-switch">
           <summary>🌐 ${escapeHtml(t.nav.lang)}</summary>
           <div class="lang-menu">
             ${LOCALES.map(
               (l) =>
-                `<a href="${l.path}"${l.code === localeCode ? ' aria-current="true"' : ""}>${escapeHtml(l.label)}</a>`
+                `<a href="${relativeLocaleHref(localeCode, l.code)}"${l.code === localeCode ? ' aria-current="true"' : ""}>${escapeHtml(l.label)}</a>`
             ).join("\n            ")}
           </div>
         </details>
@@ -127,6 +145,7 @@ function faqMarkup(t) {
 function renderPage(localeCode) {
   const t = I18N[localeCode];
   const url = canonicalUrl(localeCode);
+  const rel = relativePrefix(localeCode);
 
   return `<!DOCTYPE html>
 <html lang="${localeCode}" dir="${t.dir}">
@@ -159,8 +178,8 @@ ${faqJsonLd(t)}
     </script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/minty/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="${rel}style.css">
+    <link rel="icon" href="${rel}favicon.svg" type="image/svg+xml">
 </head>
 <body>
 <div class="d-flex flex-column min-vh-100">
@@ -231,10 +250,10 @@ ${faqJsonLd(t)}
   <footer class="footer mt-5 py-4 bg-primary text-white text-center">
     <div class="container">
       <div class="mb-2">
-        <a href="/about.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.about)}</a> |
-        <a href="/contact.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.contact)}</a> |
-        <a href="/privacy.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.privacy)}</a> |
-        <a href="/terms.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.terms)}</a>
+        <a href="${rel}about.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.about)}</a> |
+        <a href="${rel}contact.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.contact)}</a> |
+        <a href="${rel}privacy.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.privacy)}</a> |
+        <a href="${rel}terms.html" class="text-white mx-2 text-decoration-underline">${escapeHtml(t.nav.terms)}</a>
       </div>
       <small>&copy; <span id="year"></span> Universal Converter. ${escapeHtml(t.footer.rights)}</small>
     </div>
@@ -242,9 +261,9 @@ ${faqJsonLd(t)}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/convert-core.js"></script>
-<script src="/translations.js"></script>
-<script src="/script.js"></script>
+<script src="${rel}convert-core.js"></script>
+<script src="${rel}translations.js"></script>
+<script src="${rel}script.js"></script>
 </body>
 </html>
 `;
